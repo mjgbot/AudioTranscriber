@@ -7,10 +7,12 @@ A powerful tool for transcribing audio files to text using [OpenAI's Whisper](ht
 - **High Accuracy**: Uses OpenAI's Whisper model for superior transcription quality
 - **Multiple Languages**: Supports 99+ languages with automatic language detection
 - **Translation**: Translate non-English speech to English
+- **Speaker Detection**: Identify different speakers and label them as Speaker 1, Speaker 2, etc.
 - **Multiple Formats**: Support for WAV, MP3, FLAC, M4A, and more audio formats
 - **Multiple Output Formats**: Plain text (.txt), SRT subtitles (.srt), and WebVTT (.vtt)
 - **Model Options**: Choose from different model sizes (tiny, base, small, medium, large, turbo)
 - **Timestamps**: Generate subtitle files with precise timing information
+- **Meeting/Interview Mode**: Perfect for transcribing multi-speaker conversations
 
 ## Installation
 
@@ -91,6 +93,7 @@ For quick access, several batch files are provided:
 - **`run_transcriber.bat`** - Interactive command-line menu with options
 - **`transcribe.bat`** - Drag-and-drop audio files for quick transcription
 - **`generate_subtitles.bat`** - Drag-and-drop audio files to generate SRT subtitles
+- **`detect_speakers.bat`** - Drag-and-drop audio files for speaker detection
 
 ### Command Line Usage
 
@@ -120,6 +123,9 @@ python audio_transcriber.py audio_file.mp3 --output srt
 # Generate WebVTT subtitle file
 python audio_transcriber.py audio_file.mp3 --output vtt
 
+# Detect different speakers (perfect for meetings/interviews)
+python audio_transcriber.py meeting_audio.mp3 --speakers --model large
+
 # Verbose output with detailed information
 python audio_transcriber.py audio_file.mp3 --verbose
 ```
@@ -131,6 +137,7 @@ python audio_transcriber.py audio_file.mp3 --verbose
 - `--language, -l`: Language code (e.g., 'en', 'es', 'fr'). Auto-detect if not specified
 - `--task, -t`: Task type - 'transcribe' or 'translate' (default: transcribe)
 - `--output, -o`: Output format - 'txt', 'srt', or 'vtt' (default: txt)
+- `--speakers, -s`: Detect and label different speakers
 - `--verbose, -v`: Show detailed progress and metadata
 
 ## Model Comparison
@@ -193,13 +200,45 @@ python audio_transcriber.py french_interview.mp3 --task translate --model large
 python audio_transcriber.py podcast.mp3 --output srt --model base
 ```
 
+### Detect Speakers (Meeting/Interview Mode)
+```bash
+python audio_transcriber.py meeting_recording.mp3 --speakers --model large
+```
+
+### Translate with Speaker Detection
+```bash
+python audio_transcriber.py multilingual_meeting.mp3 --task translate --speakers --model medium
+```
+
 ## Output Files
 
 The tool generates output files based on the specified format:
 
-- **TXT**: Plain text transcription
-- **SRT**: SubRip subtitle format with timestamps
-- **VTT**: WebVTT subtitle format for web players
+- **TXT**: Plain text transcription (with speaker labels if --speakers is used)
+- **SRT**: SubRip subtitle format with timestamps (includes speaker names)
+- **VTT**: WebVTT subtitle format for web players (includes speaker names)
+
+### Speaker Detection Output
+
+When using the `--speakers` flag, the output will include speaker identification:
+
+**TXT Format:**
+```
+[00:00:05 - 00:00:12] Speaker 1: Hello everyone, welcome to today's meeting.
+[00:00:13 - 00:00:18] Speaker 2: Thank you for having me here.
+[00:00:19 - 00:00:25] Speaker 1: Let's start with the quarterly review.
+```
+
+**SRT Format:**
+```
+1
+00:00:05,000 --> 00:00:12,000
+Speaker 1: Hello everyone, welcome to today's meeting.
+
+2
+00:00:13,000 --> 00:00:18,000
+Speaker 2: Thank you for having me here.
+```
 
 ## Performance Tips
 
