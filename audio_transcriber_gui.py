@@ -247,6 +247,25 @@ class AudioTranscriberGUI:
                                  relief='solid', bd=1, width=6)
             format_dropdown.pack(side=tk.LEFT)
             
+            # Recording mode selection
+            mode_frame = tk.Frame(record_controls, bg=colors['surface'])
+            mode_frame.pack(side=tk.LEFT, padx=(0, 15))
+            
+            tk.Label(mode_frame, text="Source:", 
+                    font=('Segoe UI', 9), 
+                    fg=colors['text'], bg=colors['surface']).pack(side=tk.LEFT, padx=(0, 6))
+            
+            mode_options = ["Microphone", "System Audio", "Both (Mic + System)"]
+            mode_var = tk.StringVar(value="Microphone")
+            mode_dropdown = tk.OptionMenu(mode_frame, mode_var, *mode_options)
+            mode_dropdown.config(bg=colors['surface'], fg=colors['text'], 
+                               activebackground=colors['primary'], activeforeground='white',
+                               relief='solid', bd=1, width=12)
+            mode_dropdown.pack(side=tk.LEFT)
+            
+            # Store the mode variable
+            self.recording_mode = mode_var
+            
             # Recording buttons
             button_frame = tk.Frame(record_controls, bg=colors['surface'])
             button_frame.pack(side=tk.LEFT, padx=(0, 15))
@@ -548,10 +567,19 @@ class AudioTranscriberGUI:
     def _record_audio_thread(self):
         """Record audio in a separate thread"""
         try:
+            # Convert GUI mode to recorder mode
+            mode_mapping = {
+                "Microphone": "microphone",
+                "System Audio": "system", 
+                "Both (Mic + System)": "both"
+            }
+            recording_mode = mode_mapping.get(self.recording_mode.get(), "microphone")
+            
             # Start recording
             recording_file = self.audio_recorder.start_recording(
                 output_dir="recordings", 
-                format=self.recording_format.get()
+                format=self.recording_format.get(),
+                recording_mode=recording_mode
             )
             
             if recording_file:
@@ -562,8 +590,32 @@ class AudioTranscriberGUI:
                 self.root.after(0, self._recording_error, "Failed to start recording")
             
         except Exception as e:
-            # Update UI in main thread
-            self.root.after(0, self._recording_error, str(e))
+            # Update UI in main thread with more specific error handling
+            error_msg = str(e)
+            if "Unanticipated host error" in error_msg and self.recording_mode.get() in ["System Audio", "Both (Mic + System)"]:
+                if self.recording_mode.get() == "System Audio":
+                    detailed_error = ("System audio recording failed. This usually means 'Stereo Mix' is not enabled.\n\n"
+                                    "The system will automatically fall back to microphone recording.\n\n"
+                                    "To enable Stereo Mix for system audio recording:\n"
+                                    "1. Right-click speaker icon → Open Sound settings\n"
+                                    "2. Click 'Sound Control Panel' → Recording tab\n"
+                                    "3. Right-click empty space → 'Show Disabled Devices'\n"
+                                    "4. Right-click 'Stereo Mix' → Enable\n"
+                                    "5. Right-click 'Stereo Mix' → Set as Default Device\n\n"
+                                    "See SYSTEM_AUDIO_SETUP.md for detailed instructions.")
+                else:
+                    detailed_error = ("Mixed recording failed. This usually means 'Stereo Mix' is not enabled.\n\n"
+                                    "The system will automatically fall back to microphone recording.\n\n"
+                                    "To enable Stereo Mix for mixed recording:\n"
+                                    "1. Right-click speaker icon → Open Sound settings\n"
+                                    "2. Click 'Sound Control Panel' → Recording tab\n"
+                                    "3. Right-click empty space → 'Show Disabled Devices'\n"
+                                    "4. Right-click 'Stereo Mix' → Enable\n"
+                                    "5. Right-click 'Stereo Mix' → Set as Default Device\n\n"
+                                    "See SYSTEM_AUDIO_SETUP.md for detailed instructions.")
+                self.root.after(0, self._recording_error, detailed_error)
+            else:
+                self.root.after(0, self._recording_error, error_msg)
     
     def _recording_started(self, recording_file):
         """Handle recording started in main thread"""
