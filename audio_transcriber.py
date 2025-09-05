@@ -11,7 +11,7 @@ import argparse
 from pathlib import Path
 from speaker_diarization import SpeakerDiarizer
 
-def transcribe_audio(audio_file_path, model_size="base", language=None, task="transcribe", detect_speakers=False):
+def transcribe_audio(audio_file_path, model_size="base", language=None, task="transcribe", detect_speakers=False, hf_token=None):
     """
     Transcribe an audio file to text using OpenAI's Whisper model
     
@@ -21,6 +21,7 @@ def transcribe_audio(audio_file_path, model_size="base", language=None, task="tr
         language (str): Language code (e.g., 'en', 'es', 'fr') or None for auto-detection
         task (str): 'transcribe' or 'translate' (translate to English)
         detect_speakers (bool): Whether to detect different speakers
+        hf_token (str): Hugging Face token for speaker diarization
     
     Returns:
         dict: Transcription result with text and metadata
@@ -28,7 +29,7 @@ def transcribe_audio(audio_file_path, model_size="base", language=None, task="tr
     try:
         if detect_speakers:
             print(f"Loading Whisper model with speaker detection: {model_size}")
-            diarizer = SpeakerDiarizer(model_size)
+            diarizer = SpeakerDiarizer(model_size, hf_token=hf_token)
             result = diarizer.perform_diarization(audio_file_path)
         else:
             print(f"Loading Whisper model: {model_size}")
@@ -150,6 +151,7 @@ def main():
                        help="Output format (default: txt)")
     parser.add_argument("--speakers", "-s", action="store_true", 
                        help="Detect and label different speakers")
+    parser.add_argument("--hf-token", help="Hugging Face token for advanced speaker detection")
     parser.add_argument("--verbose", "-v", action="store_true", help="Show detailed progress")
     
     args = parser.parse_args()
@@ -176,6 +178,8 @@ def main():
     print(f"Task: {args.task}")
     print(f"Output format: {args.output}")
     print(f"Speaker detection: {'Yes' if args.speakers else 'No'}")
+    if args.hf_token:
+        print(f"Hugging Face token: {'Provided' if args.hf_token else 'Not provided'}")
     print("=" * 60)
     
     # Perform transcription
@@ -184,7 +188,8 @@ def main():
         model_size=args.model,
         language=args.language,
         task=args.task,
-        detect_speakers=args.speakers
+        detect_speakers=args.speakers,
+        hf_token=args.hf_token
     )
     
     if result:

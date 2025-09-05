@@ -13,19 +13,122 @@ import librosa
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.metrics.pairwise import cosine_similarity
 import warnings
+import os
+import json
+from pathlib import Path
+from huggingface_hub import login, HfApi
 warnings.filterwarnings("ignore")
 
+class HuggingFaceAuth:
+    """Handle Hugging Face authentication and token management"""
+    
+    def __init__(self):
+        self.config_file = Path.home() / ".audiotranscriber" / "hf_config.json"
+        self.config_file.parent.mkdir(exist_ok=True)
+        self.token = None
+        self.is_authenticated = False
+    
+    def save_token(self, token):
+        """Save Hugging Face token to secure config file"""
+        try:
+            config = {"hf_token": token}
+            with open(self.config_file, 'w') as f:
+                json.dump(config, f)
+            self.token = token
+            self.is_authenticated = True
+            return True
+        except Exception as e:
+            print(f"Error saving token: {e}")
+            return False
+    
+    def load_token(self):
+        """Load Hugging Face token from config file"""
+        try:
+            if self.config_file.exists():
+                with open(self.config_file, 'r') as f:
+                    config = json.load(f)
+                    self.token = config.get("hf_token")
+                    if self.token:
+                        self.is_authenticated = True
+                        return True
+        except Exception as e:
+            print(f"Error loading token: {e}")
+        return False
+    
+    def authenticate(self, token=None):
+        """Authenticate with Hugging Face"""
+        if token:
+            self.token = token
+        
+        if not self.token:
+            if not self.load_token():
+                return False
+        
+        try:
+            # Test authentication by trying to access HF API
+            api = HfApi()
+            user_info = api.whoami(token=self.token)
+            print(f"Successfully authenticated as: {user_info['name']}")
+            self.is_authenticated = True
+            return True
+        except Exception as e:
+            print(f"Authentication failed: {e}")
+            self.is_authenticated = False
+            return False
+    
+    def login_to_hf(self, token=None):
+        """Login to Hugging Face Hub"""
+        if token:
+            self.token = token
+        
+        if not self.token:
+            if not self.load_token():
+                return False
+        
+        try:
+            login(token=self.token)
+            self.is_authenticated = True
+            return True
+        except Exception as e:
+            print(f"Login failed: {e}")
+            self.is_authenticated = False
+            return False
+    
+    def clear_token(self):
+        """Clear stored token"""
+        try:
+            if self.config_file.exists():
+                self.config_file.unlink()
+            self.token = None
+            self.is_authenticated = False
+            return True
+        except Exception as e:
+            print(f"Error clearing token: {e}")
+            return False
+
 class SpeakerDiarizer:
-    def __init__(self, model_size="base"):
+    def __init__(self, model_size="base", hf_token=None):
         """
         Initialize the speaker diarization system
         
         Args:
             model_size (str): Whisper model size
+            hf_token (str): Hugging Face token for authentication
         """
         self.model_size = model_size
         self.whisper_model = None
         self.diarization_pipeline = None
+        self.hf_auth = HuggingFaceAuth()
+        
+        # Handle Hugging Face authentication
+        if hf_token:
+            self.hf_auth.save_token(hf_token)
+            self.hf_auth.login_to_hf(hf_token)
+        else:
+            # Try to load existing token
+            self.hf_auth.load_token()
+            if self.hf_auth.is_authenticated:
+                self.hf_auth.login_to_hf()
         
     def load_models(self):
         """Load Whisper and speaker diarization models"""
@@ -34,15 +137,43 @@ class SpeakerDiarizer:
         
         print("Loading speaker diarization pipeline...")
         try:
-            # Try to load pyannote pipeline (requires Hugging Face token)
-            self.diarization_pipeline = Pipeline.from_pretrained(
-                "pyannote/speaker-diarization-3.1",
-                use_auth_token=False  # Set to True if you have HF token
-            )
+            # Check if we have Hugging Face authentication
+            if self.hf_auth.is_authenticated:
+                print("Using Hugging Face authentication for pyannote pipeline...")
+                self.diarization_pipeline = Pipeline.from_pretrained(
+                    "pyannote/speaker-diarization-3.1",
+                    use_auth_token=self.hf_auth.token
+                )
+                print("Successfully loaded pyannote speaker diarization pipeline!")
+            else:
+                print("Note: pyannote pipeline requires Hugging Face authentication.")
+                print("Using fallback speaker detection method...")
+                self.diarization_pipeline = None
         except Exception as e:
             print(f"Warning: Could not load pyannote pipeline: {e}")
             print("Falling back to simple speaker detection...")
             self.diarization_pipeline = None
+    
+    def set_hf_token(self, token):
+        """Set Hugging Face token and reinitialize authentication"""
+        if self.hf_auth.save_token(token):
+            if self.hf_auth.login_to_hf(token):
+                print("Hugging Face authentication successful!")
+                return True
+            else:
+                print("Failed to authenticate with Hugging Face")
+                return False
+        else:
+            print("Failed to save Hugging Face token")
+            return False
+    
+    def get_auth_status(self):
+        """Get current authentication status"""
+        return {
+            "is_authenticated": self.hf_auth.is_authenticated,
+            "has_token": self.hf_auth.token is not None,
+            "can_use_pyannote": self.diarization_pipeline is not None
+        }
     
     def extract_speaker_embeddings(self, audio_path, segments):
         """

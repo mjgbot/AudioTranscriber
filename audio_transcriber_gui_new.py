@@ -159,23 +159,23 @@ class AudioTranscriberGUI:
         
         # Main container with padding
         main_container = tk.Frame(self.root, bg=colors['background'])
-        main_container.pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
+        main_container.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
         
         # Header section
         header_frame = tk.Frame(main_container, bg=colors['background'])
-        header_frame.pack(fill=tk.X, pady=(0, 20))
+        header_frame.pack(fill=tk.X, pady=(0, 30))
         
         # Title
         title_label = tk.Label(header_frame, text="AudioTranscriber", 
-                             font=('Segoe UI', 22, 'bold'), 
+                             font=('Segoe UI', 28, 'bold'), 
                              fg=colors['primary'], bg=colors['background'])
         title_label.pack()
         
         # Subtitle
         subtitle_label = tk.Label(header_frame, text="Transform audio into text with AI-powered transcription", 
-                                 font=('Segoe UI', 11), 
+                                 font=('Segoe UI', 14), 
                                  fg=colors['text_light'], bg=colors['background'])
-        subtitle_label.pack(pady=(3, 0))
+        subtitle_label.pack(pady=(5, 0))
         
         # Create main workflow cards
         self.create_workflow_cards(main_container, colors)
@@ -196,47 +196,47 @@ class AudioTranscriberGUI:
         """Create the audio input card"""
         # Card container
         card_frame = tk.Frame(parent, bg=colors['surface'], relief='flat', bd=0)
-        card_frame.pack(fill=tk.X, pady=(0, 12))
+        card_frame.pack(fill=tk.X, pady=(0, 20))
         
         # Add subtle shadow effect with border
-        shadow_frame = tk.Frame(parent, bg=colors['border'], height=1)
-        shadow_frame.pack(fill=tk.X, pady=(0, 11))
+        shadow_frame = tk.Frame(parent, bg=colors['border'], height=2)
+        shadow_frame.pack(fill=tk.X, pady=(0, 18))
         
         # Card content
         content_frame = tk.Frame(card_frame, bg=colors['surface'])
-        content_frame.pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
+        content_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
         
         # Card title
         title_frame = tk.Frame(content_frame, bg=colors['surface'])
-        title_frame.pack(fill=tk.X, pady=(0, 12))
+        title_frame.pack(fill=tk.X, pady=(0, 20))
         
         tk.Label(title_frame, text="🎤 Audio Input", 
-                font=('Segoe UI', 14, 'bold'), 
+                font=('Segoe UI', 16, 'bold'), 
                 fg=colors['text'], bg=colors['surface']).pack(side=tk.LEFT)
         
         # Input options
         input_frame = tk.Frame(content_frame, bg=colors['surface'])
-        input_frame.pack(fill=tk.X, pady=(0, 10))
+        input_frame.pack(fill=tk.X, pady=(0, 15))
         
         # Option 1: Record Audio
         record_frame = tk.Frame(input_frame, bg=colors['surface'])
-        record_frame.pack(fill=tk.X, pady=(0, 10))
+        record_frame.pack(fill=tk.X, pady=(0, 15))
         
         tk.Label(record_frame, text="Record new audio:", 
-                font=('Segoe UI', 10, 'bold'), 
+                font=('Segoe UI', 12, 'bold'), 
                 fg=colors['text'], bg=colors['surface']).pack(anchor=tk.W)
         
         record_controls = tk.Frame(record_frame, bg=colors['surface'])
-        record_controls.pack(fill=tk.X, pady=(6, 0))
+        record_controls.pack(fill=tk.X, pady=(10, 0))
         
         if AUDIO_RECORDING_AVAILABLE:
             # Format selection
             format_frame = tk.Frame(record_controls, bg=colors['surface'])
-            format_frame.pack(side=tk.LEFT, padx=(0, 15))
+            format_frame.pack(side=tk.LEFT, padx=(0, 20))
             
             tk.Label(format_frame, text="Format:", 
-                    font=('Segoe UI', 9), 
-                    fg=colors['text'], bg=colors['surface']).pack(side=tk.LEFT, padx=(0, 6))
+                    font=('Segoe UI', 10), 
+                    fg=colors['text'], bg=colors['surface']).pack(side=tk.LEFT, padx=(0, 8))
             
             format_options = ["WAV", "MP3"]
             format_var = tk.StringVar(value=self.recording_format.get().upper())
@@ -244,45 +244,45 @@ class AudioTranscriberGUI:
                                           command=lambda x: self.recording_format.set(x.lower()))
             format_dropdown.config(bg=colors['surface'], fg=colors['text'], 
                                  activebackground=colors['primary'], activeforeground='white',
-                                 relief='solid', bd=1, width=6)
+                                 relief='solid', bd=1, width=8)
             format_dropdown.pack(side=tk.LEFT)
             
             # Recording buttons
             button_frame = tk.Frame(record_controls, bg=colors['surface'])
-            button_frame.pack(side=tk.LEFT, padx=(0, 15))
+            button_frame.pack(side=tk.LEFT, padx=(0, 20))
             
-            self.record_button = ttk.Button(button_frame, text="🎤 Start", 
+            self.record_button = ttk.Button(button_frame, text="🎤 Start Recording", 
                                            command=self.start_recording, style='Success.TButton')
-            self.record_button.pack(side=tk.LEFT, padx=(0, 8))
+            self.record_button.pack(side=tk.LEFT, padx=(0, 10))
             
             self.stop_record_button = ttk.Button(button_frame, text="⏹️ Stop", 
                                                  command=self.stop_recording, state="disabled", style='Accent.TButton')
             self.stop_record_button.pack(side=tk.LEFT)
             
             # Status
-            self.record_status_label = tk.Label(record_controls, text="Ready", 
-                                               font=('Segoe UI', 9), 
+            self.record_status_label = tk.Label(record_controls, text="Ready to record", 
+                                               font=('Segoe UI', 10), 
                                                fg=colors['text_light'], bg=colors['surface'])
-            self.record_status_label.pack(side=tk.LEFT, padx=(15, 0))
+            self.record_status_label.pack(side=tk.LEFT, padx=(20, 0))
             
             # Audio level meter
             level_frame = tk.Frame(record_controls, bg=colors['surface'])
             level_frame.pack(side=tk.RIGHT)
             
             tk.Label(level_frame, text="Level:", 
-                    font=('Segoe UI', 8), 
-                    fg=colors['text_light'], bg=colors['surface']).pack(side=tk.LEFT, padx=(0, 4))
+                    font=('Segoe UI', 9), 
+                    fg=colors['text_light'], bg=colors['surface']).pack(side=tk.LEFT, padx=(0, 5))
             
-            self.audio_level_canvas = tk.Canvas(level_frame, width=60, height=12, 
+            self.audio_level_canvas = tk.Canvas(level_frame, width=80, height=16, 
                                                bg=colors['surface'], highlightthickness=0)
-            self.audio_level_canvas.pack(side=tk.LEFT, padx=(0, 4))
+            self.audio_level_canvas.pack(side=tk.LEFT, padx=(0, 5))
             
             # Draw the progress bar background
-            self.audio_level_canvas.create_rectangle(0, 0, 60, 12, fill=colors['surface'], outline=colors['border'])
-            self.audio_level_progress = self.audio_level_canvas.create_rectangle(0, 0, 0, 12, fill=colors['primary'], outline="")
+            self.audio_level_canvas.create_rectangle(0, 0, 80, 16, fill=colors['surface'], outline=colors['border'])
+            self.audio_level_progress = self.audio_level_canvas.create_rectangle(0, 0, 0, 16, fill=colors['primary'], outline="")
             
             self.audio_level_label = tk.Label(level_frame, text="0%", 
-                                             font=('Segoe UI', 8), 
+                                             font=('Segoe UI', 9), 
                                              fg=colors['text_light'], bg=colors['surface'])
             self.audio_level_label.pack(side=tk.LEFT)
         else:
@@ -295,40 +295,40 @@ class AudioTranscriberGUI:
         upload_frame.pack(fill=tk.X)
         
         tk.Label(upload_frame, text="Or upload audio file:", 
-                font=('Segoe UI', 10, 'bold'), 
+                font=('Segoe UI', 12, 'bold'), 
                 fg=colors['text'], bg=colors['surface']).pack(anchor=tk.W)
         
         file_frame = tk.Frame(upload_frame, bg=colors['surface'])
-        file_frame.pack(fill=tk.X, pady=(6, 0))
+        file_frame.pack(fill=tk.X, pady=(10, 0))
         
         self.audio_file_entry = tk.Entry(file_frame, textvariable=self.audio_file_path, state="readonly", 
                                        bg=colors['surface'], fg=colors['text'], 
-                                       font=('Segoe UI', 9), relief='solid', bd=1)
-        self.audio_file_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 8))
+                                       font=('Segoe UI', 10), relief='solid', bd=1)
+        self.audio_file_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 10))
         
-        ttk.Button(file_frame, text="📁 Browse", command=self.browse_file, style='Warning.TButton').pack(side=tk.LEFT, padx=(0, 6))
+        ttk.Button(file_frame, text="📁 Browse", command=self.browse_file, style='Warning.TButton').pack(side=tk.LEFT, padx=(0, 8))
         ttk.Button(file_frame, text="🗑️ Clear", command=self.clear_audio_file, style='Accent.TButton').pack(side=tk.LEFT)
     
     def create_settings_card(self, parent, colors):
         """Create the transcription settings card"""
         # Card container
         card_frame = tk.Frame(parent, bg=colors['surface'], relief='flat', bd=0)
-        card_frame.pack(fill=tk.X, pady=(0, 12))
+        card_frame.pack(fill=tk.X, pady=(0, 20))
         
         # Add subtle shadow effect with border
-        shadow_frame = tk.Frame(parent, bg=colors['border'], height=1)
-        shadow_frame.pack(fill=tk.X, pady=(0, 11))
+        shadow_frame = tk.Frame(parent, bg=colors['border'], height=2)
+        shadow_frame.pack(fill=tk.X, pady=(0, 18))
         
         # Card content
         content_frame = tk.Frame(card_frame, bg=colors['surface'])
-        content_frame.pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
+        content_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
         
         # Card title
         title_frame = tk.Frame(content_frame, bg=colors['surface'])
-        title_frame.pack(fill=tk.X, pady=(0, 12))
+        title_frame.pack(fill=tk.X, pady=(0, 20))
         
         tk.Label(title_frame, text="⚙️ Transcription Settings", 
-                font=('Segoe UI', 14, 'bold'), 
+                font=('Segoe UI', 16, 'bold'), 
                 fg=colors['text'], bg=colors['surface']).pack(side=tk.LEFT)
         
         # Settings grid
@@ -337,87 +337,79 @@ class AudioTranscriberGUI:
         
         # Row 1: Model and Language
         row1 = tk.Frame(settings_frame, bg=colors['surface'])
-        row1.pack(fill=tk.X, pady=(0, 10))
+        row1.pack(fill=tk.X, pady=(0, 15))
         
         # Model selection
         model_frame = tk.Frame(row1, bg=colors['surface'])
-        model_frame.pack(side=tk.LEFT, padx=(0, 20))
+        model_frame.pack(side=tk.LEFT, padx=(0, 30))
         
         tk.Label(model_frame, text="Model:", 
-                font=('Segoe UI', 9, 'bold'), 
+                font=('Segoe UI', 11, 'bold'), 
                 fg=colors['text'], bg=colors['surface']).pack(anchor=tk.W)
         
-        model_options = ["Tiny", "Base", "Small", "Medium", "Large"]
-        model_var = tk.StringVar(value="Base")
+        model_options = ["Tiny (Fastest)", "Base (Balanced)", "Small (Better)", "Medium (Good)", "Large (Best)"]
+        model_var = tk.StringVar(value="Base (Balanced)")
         model_dropdown = tk.OptionMenu(model_frame, model_var, *model_options)
         model_dropdown.config(bg=colors['surface'], fg=colors['text'], 
                              activebackground=colors['primary'], activeforeground='white',
-                             relief='solid', bd=1, width=10)
-        model_dropdown.pack(anchor=tk.W, pady=(3, 0))
+                             relief='solid', bd=1, width=15)
+        model_dropdown.pack(anchor=tk.W, pady=(5, 0))
         
         # Language selection
         lang_frame = tk.Frame(row1, bg=colors['surface'])
-        lang_frame.pack(side=tk.LEFT, padx=(0, 20))
+        lang_frame.pack(side=tk.LEFT, padx=(0, 30))
         
         tk.Label(lang_frame, text="Language:", 
-                font=('Segoe UI', 9, 'bold'), 
+                font=('Segoe UI', 11, 'bold'), 
                 fg=colors['text'], bg=colors['surface']).pack(anchor=tk.W)
         
-        lang_options = ["Auto", "English", "Spanish", "French", "German", "Italian", "Portuguese", "Chinese", "Japanese"]
-        lang_var = tk.StringVar(value="Auto")
+        lang_options = ["Auto-detect", "English", "Spanish", "French", "German", "Italian", "Portuguese", "Chinese", "Japanese"]
+        lang_var = tk.StringVar(value="Auto-detect")
         lang_dropdown = tk.OptionMenu(lang_frame, lang_var, *lang_options)
         lang_dropdown.config(bg=colors['surface'], fg=colors['text'], 
                             activebackground=colors['primary'], activeforeground='white',
-                            relief='solid', bd=1, width=8)
-        lang_dropdown.pack(anchor=tk.W, pady=(3, 0))
+                            relief='solid', bd=1, width=12)
+        lang_dropdown.pack(anchor=tk.W, pady=(5, 0))
         
         # Output format
         output_frame = tk.Frame(row1, bg=colors['surface'])
         output_frame.pack(side=tk.LEFT)
         
         tk.Label(output_frame, text="Output:", 
-                font=('Segoe UI', 9, 'bold'), 
+                font=('Segoe UI', 11, 'bold'), 
                 fg=colors['text'], bg=colors['surface']).pack(anchor=tk.W)
         
-        output_options = ["Text", "SRT", "WebVTT"]
-        output_var = tk.StringVar(value="Text")
+        output_options = ["Plain Text", "SRT Subtitles", "WebVTT Subtitles"]
+        output_var = tk.StringVar(value="Plain Text")
         output_dropdown = tk.OptionMenu(output_frame, output_var, *output_options)
         output_dropdown.config(bg=colors['surface'], fg=colors['text'], 
                               activebackground=colors['primary'], activeforeground='white',
-                              relief='solid', bd=1, width=8)
-        output_dropdown.pack(anchor=tk.W, pady=(3, 0))
+                              relief='solid', bd=1, width=12)
+        output_dropdown.pack(anchor=tk.W, pady=(5, 0))
         
         # Row 2: Advanced options
         row2 = tk.Frame(settings_frame, bg=colors['surface'])
-        row2.pack(fill=tk.X, pady=(10, 0))
+        row2.pack(fill=tk.X, pady=(15, 0))
         
         # Speaker detection
         speaker_frame = tk.Frame(row2, bg=colors['surface'])
-        speaker_frame.pack(side=tk.LEFT, padx=(0, 20))
+        speaker_frame.pack(side=tk.LEFT, padx=(0, 30))
         
-        # Create a custom checkbox using a button
-        checkbox_frame = tk.Frame(speaker_frame, bg=colors['surface'])
-        checkbox_frame.pack(anchor=tk.W)
-        
-        self.checkbox_button = tk.Button(checkbox_frame, text="☐", 
-                                        font=('Segoe UI', 10),
-                                        fg=colors['text'], bg=colors['surface'],
-                                        activebackground=colors['surface'],
-                                        relief='flat', bd=0,
-                                        command=self.toggle_speaker_detection)
-        self.checkbox_button.pack(side=tk.LEFT, padx=(0, 6))
-        
-        tk.Label(checkbox_frame, text="Detect speakers", 
-                font=('Segoe UI', 9),
-                fg=colors['text'], bg=colors['surface']).pack(side=tk.LEFT)
+        self.speaker_checkbox = tk.Checkbutton(speaker_frame, text="Detect different speakers", 
+                                              variable=self.detect_speakers,
+                                              font=('Segoe UI', 10),
+                                              fg=colors['text'], bg=colors['surface'],
+                                              activebackground=colors['surface'],
+                                              selectcolor=colors['primary'])
+        self.speaker_checkbox.pack(anchor=tk.W)
         
         # View transcriptions button
-        ttk.Button(row2, text="📄 View Files", 
-                  command=self.view_transcriptions, style='Warning.TButton').pack(side=tk.LEFT, padx=(15, 0))
+        ttk.Button(row2, text="📄 View Transcriptions", 
+                  command=self.view_transcriptions, style='Warning.TButton').pack(side=tk.LEFT, padx=(20, 0))
         
         # Main action button
         action_frame = tk.Frame(content_frame, bg=colors['surface'])
-        action_frame.pack(fill=tk.X, pady=(15, 0))
+        action_frame.pack(fill=tk.X, pady=(20, 0))
         
         self.transcribe_button = ttk.Button(action_frame, text="🚀 Start Transcription", 
                                            command=self.start_transcription, style='Primary.TButton')
@@ -425,54 +417,54 @@ class AudioTranscriberGUI:
         
         self.clear_button = ttk.Button(action_frame, text="🧹 Clear All", 
                                       command=self.clear_all, style='Accent.TButton')
-        self.clear_button.pack(side=tk.LEFT, padx=(12, 0))
+        self.clear_button.pack(side=tk.LEFT, padx=(15, 0))
     
     def create_results_card(self, parent, colors):
         """Create the results card"""
         # Card container
         card_frame = tk.Frame(parent, bg=colors['surface'], relief='flat', bd=0)
-        card_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 12))
+        card_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 20))
         
         # Add subtle shadow effect with border
-        shadow_frame = tk.Frame(parent, bg=colors['border'], height=1)
-        shadow_frame.pack(fill=tk.X, pady=(0, 11))
+        shadow_frame = tk.Frame(parent, bg=colors['border'], height=2)
+        shadow_frame.pack(fill=tk.X, pady=(0, 18))
         
         # Card content
         content_frame = tk.Frame(card_frame, bg=colors['surface'])
-        content_frame.pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
+        content_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
         
         # Card title
         title_frame = tk.Frame(content_frame, bg=colors['surface'])
-        title_frame.pack(fill=tk.X, pady=(0, 10))
+        title_frame.pack(fill=tk.X, pady=(0, 15))
         
         tk.Label(title_frame, text="📝 Transcription Results", 
-                font=('Segoe UI', 14, 'bold'), 
+                font=('Segoe UI', 16, 'bold'), 
                 fg=colors['text'], bg=colors['surface']).pack(side=tk.LEFT)
         
         # Progress bar
         progress_frame = tk.Frame(content_frame, bg=colors['surface'])
-        progress_frame.pack(fill=tk.X, pady=(0, 8))
+        progress_frame.pack(fill=tk.X, pady=(0, 10))
         
         self.progress_var = tk.DoubleVar()
         
         # Create modern progress bar using Canvas
-        self.progress_canvas = tk.Canvas(progress_frame, width=400, height=6, 
+        self.progress_canvas = tk.Canvas(progress_frame, width=400, height=8, 
                                         bg=colors['surface'], highlightthickness=0)
         self.progress_canvas.pack(fill=tk.X)
         
         # Draw the progress bar background
-        self.progress_canvas.create_rectangle(0, 0, 400, 6, fill=colors['border'], outline="")
-        self.progress_fill = self.progress_canvas.create_rectangle(0, 0, 0, 6, fill=colors['primary'], outline="")
+        self.progress_canvas.create_rectangle(0, 0, 400, 8, fill=colors['border'], outline="")
+        self.progress_fill = self.progress_canvas.create_rectangle(0, 0, 0, 8, fill=colors['primary'], outline="")
         
         # Status label
         self.status_label = tk.Label(content_frame, text="Ready to transcribe", 
-                                    font=('Segoe UI', 9), 
+                                    font=('Segoe UI', 11), 
                                     fg=colors['text_light'], bg=colors['surface'])
-        self.status_label.pack(anchor=tk.W, pady=(0, 10))
+        self.status_label.pack(anchor=tk.W, pady=(0, 15))
         
         # Results text area
-        self.results_text = scrolledtext.ScrolledText(content_frame, height=10, width=80,
-                                                     font=('Segoe UI', 9),
+        self.results_text = scrolledtext.ScrolledText(content_frame, height=12, width=80,
+                                                     font=('Segoe UI', 10),
                                                      bg=colors['surface'], fg=colors['text'],
                                                      relief='solid', bd=1,
                                                      wrap=tk.WORD)
@@ -498,7 +490,7 @@ class AudioTranscriberGUI:
         self.progress_var.set(value)
         if hasattr(self, 'progress_canvas') and hasattr(self, 'progress_fill'):
             width = int((value / 100.0) * 400)
-            self.progress_canvas.coords(self.progress_fill, 0, 0, width, 6)
+            self.progress_canvas.coords(self.progress_fill, 0, 0, width, 8)
     
     def update_audio_level(self, level):
         """Update the audio level display"""
@@ -510,8 +502,8 @@ class AudioTranscriberGUI:
         try:
             if hasattr(self, 'audio_level_canvas') and hasattr(self, 'audio_level_progress'):
                 # Update canvas-based progress bar
-                width = int((level / 100.0) * 60)
-                self.audio_level_canvas.coords(self.audio_level_progress, 0, 0, width, 12)
+                width = int((level / 100.0) * 80)
+                self.audio_level_canvas.coords(self.audio_level_progress, 0, 0, width, 16)
             self.audio_level_label.config(text=f"{level:.1f}%")
         except:
             pass  # Ignore errors if widgets don't exist yet
@@ -549,26 +541,17 @@ class AudioTranscriberGUI:
         """Record audio in a separate thread"""
         try:
             # Start recording
-            recording_file = self.audio_recorder.start_recording(
+            saved_file = self.audio_recorder.start_recording(
                 output_dir="recordings", 
                 format=self.recording_format.get()
             )
             
-            if recording_file:
-                # Recording started successfully, just update status
-                self.root.after(0, self._recording_started, recording_file)
-            else:
-                # Failed to start recording
-                self.root.after(0, self._recording_error, "Failed to start recording")
+            # Update UI in main thread
+            self.root.after(0, self._recording_complete, saved_file)
             
         except Exception as e:
             # Update UI in main thread
             self.root.after(0, self._recording_error, str(e))
-    
-    def _recording_started(self, recording_file):
-        """Handle recording started in main thread"""
-        self.record_status_label.config(text="Recording...")
-        self.update_status("Recording in progress")
     
     def _recording_complete(self, saved_file):
         """Handle recording completion in main thread"""
@@ -581,7 +564,7 @@ class AudioTranscriberGUI:
             
             # Reset audio level display
             if hasattr(self, 'audio_level_canvas') and hasattr(self, 'audio_level_progress'):
-                self.audio_level_canvas.coords(self.audio_level_progress, 0, 0, 0, 12)
+                self.audio_level_canvas.coords(self.audio_level_progress, 0, 0, 0, 16)
             if hasattr(self, 'audio_level_label'):
                 self.audio_level_label.config(text="0%")
             
@@ -620,7 +603,7 @@ class AudioTranscriberGUI:
                 
                 # Reset audio level display
                 if hasattr(self, 'audio_level_canvas') and hasattr(self, 'audio_level_progress'):
-                    self.audio_level_canvas.coords(self.audio_level_progress, 0, 0, 0, 12)
+                    self.audio_level_canvas.coords(self.audio_level_progress, 0, 0, 0, 16)
                 if hasattr(self, 'audio_level_label'):
                     self.audio_level_label.config(text="0%")
                 
@@ -630,11 +613,14 @@ class AudioTranscriberGUI:
                 messagebox.showinfo("Recording Complete", 
                                   f"Recording saved successfully!\n\nFile: {saved_file}")
             else:
-                self._recording_error("Failed to save recording")
+                messagebox.showerror("Error", "Failed to save recording")
                 
         except Exception as e:
-            self._recording_error(f"Error stopping recording: {str(e)}")
-        
+            messagebox.showerror("Error", f"Failed to stop recording: {str(e)}")
+            self.is_recording = False
+            self.record_button.config(state="normal")
+            self.stop_record_button.config(state="disabled")
+    
     def browse_file(self):
         """Browse for audio file"""
         filetypes = [
@@ -863,7 +849,7 @@ class AudioTranscriberGUI:
         
         if output_format == "txt":
             output_file = transcriptions_dir / f"{base_name}_transcription.txt"
-        
+            
             if isinstance(result, dict) and 'segments' in result:
                 # Speaker diarization results
                 with open(output_file, 'w', encoding='utf-8') as f:
@@ -881,21 +867,13 @@ class AudioTranscriberGUI:
         
         return output_file
     
-    def toggle_speaker_detection(self):
-        """Toggle speaker detection checkbox"""
-        self.detect_speakers.set(not self.detect_speakers.get())
-        if self.detect_speakers.get():
-            self.checkbox_button.config(text="☑")
-        else:
-            self.checkbox_button.config(text="☐")
-    
     def clear_all(self):
         """Clear all fields and results"""
         self.audio_file_path.set("")
         self.results_text.delete(1.0, tk.END)
         self.update_progress(0)
         self.update_status("Ready to transcribe")
-        
+
 
 def main():
     root = tk.Tk()

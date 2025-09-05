@@ -6,3 +6,8 @@ pyannote.audio
 speechbrain
 librosa
 scikit-learn
+huggingface_hub
+
+# Optional dependencies for audio recording
+# Uncomment the line below to enable microphone recording
+# pyaudio
