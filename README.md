@@ -60,7 +60,43 @@ pip install -r requirements.txt
 
 ## Usage
 
-### Basic Usage
+### GUI Application (Recommended)
+
+The easiest way to use AudioTranscriber is through the graphical interface:
+
+**Windows:**
+```bash
+# Double-click the batch file
+launch_gui.bat
+
+# Or run directly
+python audio_transcriber_gui.py
+```
+
+**Features of the GUI:**
+- **File Browser**: Easy audio file selection with drag-and-drop support
+- **Model Selection**: Choose from all available Whisper models with descriptions
+- **Language Selection**: Pick from 16+ common languages or use auto-detection
+- **Task Options**: Transcribe or translate to English
+- **Output Formats**: Plain text, SRT subtitles, or WebVTT subtitles
+- **Progress Bar**: Real-time transcription progress
+- **Results Display**: View transcription results directly in the interface
+- **Status Updates**: Clear feedback on what's happening
+
+### Batch Files (Windows)
+
+For quick access, several batch files are provided:
+
+- **`launch_gui.bat`** - Launch the GUI application
+- **`run_transcriber.bat`** - Interactive command-line menu with options
+- **`transcribe.bat`** - Drag-and-drop audio files for quick transcription
+- **`generate_subtitles.bat`** - Drag-and-drop audio files to generate SRT subtitles
+
+### Command Line Usage
+
+For advanced users or automation, you can use the command-line interface:
+
+#### Basic Usage
 
 ```bash
 python audio_transcriber.py audio_file.mp3
