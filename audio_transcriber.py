@@ -9,8 +9,9 @@ import sys
 import os
 import argparse
 from pathlib import Path
+from speaker_diarization import SpeakerDiarizer
 
-def transcribe_audio(audio_file_path, model_size="base", language=None, task="transcribe"):
+def transcribe_audio(audio_file_path, model_size="base", language=None, task="transcribe", detect_speakers=False):
     """
     Transcribe an audio file to text using OpenAI's Whisper model
     
@@ -19,24 +20,30 @@ def transcribe_audio(audio_file_path, model_size="base", language=None, task="tr
         model_size (str): Whisper model size (tiny, base, small, medium, large, turbo)
         language (str): Language code (e.g., 'en', 'es', 'fr') or None for auto-detection
         task (str): 'transcribe' or 'translate' (translate to English)
+        detect_speakers (bool): Whether to detect different speakers
     
     Returns:
         dict: Transcription result with text and metadata
     """
     try:
-        print(f"Loading Whisper model: {model_size}")
-        model = whisper.load_model(model_size)
-        
-        print(f"Transcribing: {audio_file_path}")
-        print("This may take a while depending on the audio length and model size...")
-        
-        # Transcribe the audio
-        result = model.transcribe(
-            audio_file_path,
-            language=language,
-            task=task,
-            verbose=True
-        )
+        if detect_speakers:
+            print(f"Loading Whisper model with speaker detection: {model_size}")
+            diarizer = SpeakerDiarizer(model_size)
+            result = diarizer.perform_diarization(audio_file_path)
+        else:
+            print(f"Loading Whisper model: {model_size}")
+            model = whisper.load_model(model_size)
+            
+            print(f"Transcribing: {audio_file_path}")
+            print("This may take a while depending on the audio length and model size...")
+            
+            # Transcribe the audio
+            result = model.transcribe(
+                audio_file_path,
+                language=language,
+                task=task,
+                verbose=True
+            )
         
         return result
         
@@ -61,27 +68,56 @@ def save_transcription(result, audio_file_path, output_format="txt"):
     if output_format == "txt":
         output_file = f"{base_name}_transcription.txt"
         with open(output_file, 'w', encoding='utf-8') as f:
-            f.write(result["text"])
+            # Check if speaker information is available
+            has_speakers = any('speaker' in segment for segment in result.get('segments', []))
+            
+            if has_speakers:
+                # Format with speaker labels
+                for segment in result["segments"]:
+                    speaker = segment.get('speaker', 'Speaker 1')
+                    start_time = format_time(segment["start"])
+                    end_time = format_time(segment["end"])
+                    text = segment['text'].strip()
+                    f.write(f"[{start_time} - {end_time}] {speaker}: {text}\n")
+            else:
+                # Standard format without speakers
+                f.write(result["text"])
     
     elif output_format == "srt":
         output_file = f"{base_name}_transcription.srt"
         with open(output_file, 'w', encoding='utf-8') as f:
+            has_speakers = any('speaker' in segment for segment in result.get('segments', []))
+            
             for i, segment in enumerate(result["segments"], 1):
                 start_time = format_time(segment["start"])
                 end_time = format_time(segment["end"])
+                text = segment['text'].strip()
+                
+                if has_speakers:
+                    speaker = segment.get('speaker', 'Speaker 1')
+                    text = f"{speaker}: {text}"
+                
                 f.write(f"{i}\n")
                 f.write(f"{start_time} --> {end_time}\n")
-                f.write(f"{segment['text'].strip()}\n\n")
+                f.write(f"{text}\n\n")
     
     elif output_format == "vtt":
         output_file = f"{base_name}_transcription.vtt"
         with open(output_file, 'w', encoding='utf-8') as f:
             f.write("WEBVTT\n\n")
+            has_speakers = any('speaker' in segment for segment in result.get('segments', []))
+            
             for segment in result["segments"]:
                 start_time = format_time_vtt(segment["start"])
                 end_time = format_time_vtt(segment["end"])
+                text = segment['text'].strip()
+                
+                if has_speakers:
+                    speaker = segment.get('speaker', 'Speaker 1')
+                    text = f"{speaker}: {text}"
+                
                 f.write(f"{start_time} --> {end_time}\n")
-                f.write(f"{segment['text'].strip()}\n\n")
+                f.write(f"{text}\n\n")
     
     return output_file
 
@@ -112,6 +148,8 @@ def main():
                        help="Task: transcribe or translate to English (default: transcribe)")
     parser.add_argument("--output", "-o", default="txt", choices=["txt", "srt", "vtt"],
                        help="Output format (default: txt)")
+    parser.add_argument("--speakers", "-s", action="store_true", 
+                       help="Detect and label different speakers")
     parser.add_argument("--verbose", "-v", action="store_true", help="Show detailed progress")
     
     args = parser.parse_args()
@@ -137,6 +175,7 @@ def main():
     print(f"Language: {args.language or 'Auto-detect'}")
     print(f"Task: {args.task}")
     print(f"Output format: {args.output}")
+    print(f"Speaker detection: {'Yes' if args.speakers else 'No'}")
     print("=" * 60)
     
     # Perform transcription
@@ -144,14 +183,32 @@ def main():
         args.audio_file, 
         model_size=args.model,
         language=args.language,
-        task=args.task
+        task=args.task,
+        detect_speakers=args.speakers
     )
     
     if result:
         print("\n" + "=" * 60)
         print("TRANSCRIPTION RESULT")
         print("=" * 60)
-        print(result["text"])
+        
+        # Check if speaker information is available
+        has_speakers = any('speaker' in segment for segment in result.get('segments', []))
+        
+        if has_speakers:
+            # Display with speaker labels
+            print("Speaker-labeled transcription:")
+            print("-" * 40)
+            for segment in result["segments"]:
+                speaker = segment.get('speaker', 'Speaker 1')
+                start_time = format_time(segment["start"])
+                end_time = format_time(segment["end"])
+                text = segment['text'].strip()
+                print(f"[{start_time} - {end_time}] {speaker}: {text}")
+        else:
+            # Standard display
+            print(result["text"])
+        
         print("=" * 60)
         
         # Save to file
@@ -164,6 +221,11 @@ def main():
             print(f"\nDetected language: {result.get('language', 'Unknown')}")
             print(f"Number of segments: {len(result['segments'])}")
             print(f"Total duration: {result['segments'][-1]['end']:.2f} seconds")
+            
+            if has_speakers:
+                # Count unique speakers
+                speakers = set(segment.get('speaker', 'Speaker 1') for segment in result['segments'])
+                print(f"Detected speakers: {len(speakers)} ({', '.join(sorted(speakers))})")
     else:
         print("Transcription failed!")
         sys.exit(1)

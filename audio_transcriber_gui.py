@@ -11,6 +11,7 @@ import os
 import sys
 from pathlib import Path
 import whisper
+from speaker_diarization import SpeakerDiarizer
 
 class AudioTranscriberGUI:
     def __init__(self, root):
@@ -25,6 +26,7 @@ class AudioTranscriberGUI:
         self.selected_language = tk.StringVar()
         self.selected_task = tk.StringVar(value="transcribe")
         self.selected_output = tk.StringVar(value="txt")
+        self.detect_speakers = tk.BooleanVar(value=False)
         self.is_transcribing = False
         
         # Available models
@@ -143,9 +145,17 @@ class AudioTranscriberGUI:
                                         state="readonly", width=40)
         self.output_combo.grid(row=0, column=0, sticky=(tk.W, tk.E))
         
+        # Speaker detection checkbox
+        speaker_frame = ttk.Frame(main_frame)
+        speaker_frame.grid(row=7, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=5)
+        
+        self.speaker_checkbox = ttk.Checkbutton(speaker_frame, text="Detect different speakers", 
+                                              variable=self.detect_speakers)
+        self.speaker_checkbox.grid(row=0, column=0, sticky=tk.W)
+        
         # Control buttons
         button_frame = ttk.Frame(main_frame)
-        button_frame.grid(row=7, column=0, columnspan=3, pady=20)
+        button_frame.grid(row=8, column=0, columnspan=3, pady=20)
         
         self.transcribe_button = ttk.Button(button_frame, text="Start Transcription", 
                                            command=self.start_transcription)
@@ -159,23 +169,23 @@ class AudioTranscriberGUI:
         self.progress_var = tk.DoubleVar()
         self.progress_bar = ttk.Progressbar(main_frame, variable=self.progress_var, 
                                            maximum=100, length=400)
-        self.progress_bar.grid(row=8, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=10)
+        self.progress_bar.grid(row=9, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=10)
         
         # Status label
         self.status_label = ttk.Label(main_frame, text="Ready to transcribe", 
                                     font=("Arial", 10))
-        self.status_label.grid(row=9, column=0, columnspan=3, pady=5)
+        self.status_label.grid(row=10, column=0, columnspan=3, pady=5)
         
         # Results area
         ttk.Label(main_frame, text="Transcription Results:", 
-                font=("Arial", 12, "bold")).grid(row=10, column=0, columnspan=3, 
+                font=("Arial", 12, "bold")).grid(row=11, column=0, columnspan=3, 
                                                 sticky=tk.W, pady=(20, 5))
         
         self.results_text = scrolledtext.ScrolledText(main_frame, height=15, width=80)
-        self.results_text.grid(row=11, column=0, columnspan=3, sticky=(tk.W, tk.E, tk.N, tk.S), pady=5)
+        self.results_text.grid(row=12, column=0, columnspan=3, sticky=(tk.W, tk.E, tk.N, tk.S), pady=5)
         
         # Configure grid weights for resizing
-        main_frame.rowconfigure(11, weight=1)
+        main_frame.rowconfigure(12, weight=1)
         
     def browse_file(self):
         """Open file dialog to select audio file"""
@@ -242,25 +252,31 @@ class AudioTranscriberGUI:
         try:
             audio_file = self.audio_file_path.get()
             model_value, lang_value, task_value, output_value = self.get_selected_values()
+            detect_speakers = self.detect_speakers.get()
             
             self.update_status("Loading Whisper model...")
             self.progress_var.set(10)
             
-            # Import whisper here to avoid import issues
-            import whisper
-            
-            model = whisper.load_model(model_value)
-            
-            self.update_status("Transcribing audio...")
-            self.progress_var.set(30)
-            
-            # Perform transcription
-            result = model.transcribe(
-                audio_file,
-                language=lang_value if lang_value else None,
-                task=task_value,
-                verbose=False
-            )
+            if detect_speakers:
+                # Use speaker diarization
+                self.update_status("Loading speaker diarization model...")
+                diarizer = SpeakerDiarizer(model_value)
+                result = diarizer.perform_diarization(audio_file)
+            else:
+                # Standard transcription
+                import whisper
+                model = whisper.load_model(model_value)
+                
+                self.update_status("Transcribing audio...")
+                self.progress_var.set(30)
+                
+                # Perform transcription
+                result = model.transcribe(
+                    audio_file,
+                    language=lang_value if lang_value else None,
+                    task=task_value,
+                    verbose=False
+                )
             
             self.progress_var.set(80)
             self.update_status("Saving results...")
@@ -335,16 +351,36 @@ class AudioTranscriberGUI:
         """Display transcription results in the GUI"""
         self.results_text.delete(1.0, tk.END)
         
+        # Check if speaker information is available
+        has_speakers = any('speaker' in segment for segment in result.get('segments', []))
+        
         # Display basic info
         info_text = f"Detected Language: {result.get('language', 'Unknown')}\n"
         info_text += f"Number of Segments: {len(result.get('segments', []))}\n"
         if result.get('segments'):
             info_text += f"Total Duration: {result['segments'][-1]['end']:.2f} seconds\n"
+        
+        if has_speakers:
+            # Count unique speakers
+            speakers = set(segment.get('speaker', 'Speaker 1') for segment in result['segments'])
+            info_text += f"Detected Speakers: {len(speakers)} ({', '.join(sorted(speakers))})\n"
+        
         info_text += f"Output File: {output_file}\n"
         info_text += "=" * 50 + "\n\n"
         
         # Display transcription text
-        transcription_text = result["text"]
+        if has_speakers:
+            # Display with speaker labels
+            transcription_text = ""
+            for segment in result["segments"]:
+                speaker = segment.get('speaker', 'Speaker 1')
+                start_time = self.format_time(segment["start"])
+                end_time = self.format_time(segment["end"])
+                text = segment['text'].strip()
+                transcription_text += f"[{start_time} - {end_time}] {speaker}: {text}\n"
+        else:
+            # Standard display
+            transcription_text = result["text"]
         
         self.results_text.insert(tk.END, info_text + transcription_text)
         

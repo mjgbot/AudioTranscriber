@@ -39,21 +39,23 @@ echo 2. High accuracy transcribe (large model)
 echo 3. Fast transcribe (tiny model)
 echo 4. Generate subtitles (SRT format)
 echo 5. Translate to English
-echo 6. Custom options
-echo 7. Show help
-echo 8. Exit
+echo 6. Detect speakers (meeting/interview mode)
+echo 7. Custom options
+echo 8. Show help
+echo 9. Exit
 echo.
 
-set /p choice="Enter your choice (1-8): "
+set /p choice="Enter your choice (1-9): "
 
 if "%choice%"=="1" goto quick_transcribe
 if "%choice%"=="2" goto high_accuracy
 if "%choice%"=="3" goto fast_transcribe
 if "%choice%"=="4" goto generate_subtitles
 if "%choice%"=="5" goto translate
-if "%choice%"=="6" goto custom_options
-if "%choice%"=="7" goto show_help
-if "%choice%"=="8" goto exit_program
+if "%choice%"=="6" goto detect_speakers
+if "%choice%"=="7" goto custom_options
+if "%choice%"=="8" goto show_help
+if "%choice%"=="9" goto exit_program
 goto invalid_choice
 
 :quick_transcribe
@@ -128,6 +130,24 @@ if "%language%"=="" (
 )
 goto end
 
+:detect_speakers
+echo.
+echo === Detect Speakers (Meeting/Interview Mode) ===
+echo This will identify different speakers and label them as Speaker 1, Speaker 2, etc.
+set /p audio_file="Enter path to audio file: "
+if "%audio_file%"=="" (
+    echo No file specified. Exiting...
+    pause
+    exit /b 1
+)
+set /p model_choice="Choose model (base/large): "
+if "%model_choice%"=="large" (
+    python audio_transcriber.py "%audio_file%" --model large --speakers --verbose
+) else (
+    python audio_transcriber.py "%audio_file%" --model base --speakers --verbose
+)
+goto end
+
 :custom_options
 echo.
 echo === Custom Options ===
@@ -156,11 +176,23 @@ echo.
 set /p language="Enter language code (optional, e.g., en, es, fr): "
 
 echo.
-echo Running: python audio_transcriber.py "%audio_file%" --model %model% --task %task% --output %output%
-if "%language%"=="" (
-    python audio_transcriber.py "%audio_file%" --model %model% --task %task% --output %output% --verbose
+set /p speakers="Detect speakers? (y/N): "
+
+echo.
+if "%speakers%"=="y" (
+    echo Running: python audio_transcriber.py "%audio_file%" --model %model% --task %task% --output %output% --speakers
+    if "%language%"=="" (
+        python audio_transcriber.py "%audio_file%" --model %model% --task %task% --output %output% --speakers --verbose
+    ) else (
+        python audio_transcriber.py "%audio_file%" --model %model% --task %task% --output %output% --speakers --language %language% --verbose
+    )
 ) else (
-    python audio_transcriber.py "%audio_file%" --model %model% --task %task% --output %output% --language %language% --verbose
+    echo Running: python audio_transcriber.py "%audio_file%" --model %model% --task %task% --output %output%
+    if "%language%"=="" (
+        python audio_transcriber.py "%audio_file%" --model %model% --task %task% --output %output% --verbose
+    ) else (
+        python audio_transcriber.py "%audio_file%" --model %model% --task %task% --output %output% --language %language% --verbose
+    )
 )
 goto end
 

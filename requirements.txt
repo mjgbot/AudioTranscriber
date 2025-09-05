@@ -2,3 +2,7 @@ openai-whisper
 torch
 torchaudio
 ffmpeg-python
+pyannote.audio
+speechbrain
+librosa
+scikit-learn
