@@ -19,6 +19,7 @@ class AudioRecorder:
     def __init__(self):
         self.audio = pyaudio.PyAudio()
         self.is_recording = False
+        self.is_paused = False
         self.recording_thread = None
         self.frames = []
         self.recording_file = None
@@ -337,6 +338,11 @@ class AudioRecorder:
             # Record audio from both sources
             while self.is_recording:
                 try:
+                    # Check if recording is paused
+                    if self.is_paused:
+                        time.sleep(0.1)  # Sleep briefly when paused
+                        continue
+                    
                     # Read from both streams
                     mic_data = self.mic_stream.read(self.chunk, exception_on_overflow=False)
                     system_data = self.system_stream.read(self.chunk, exception_on_overflow=False)
@@ -407,6 +413,11 @@ class AudioRecorder:
             # Record audio
             while self.is_recording:
                 try:
+                    # Check if recording is paused
+                    if self.is_paused:
+                        time.sleep(0.1)  # Sleep briefly when paused
+                        continue
+                    
                     data = stream.read(self.chunk, exception_on_overflow=False)
                     self.frames.append(data)
                     
@@ -472,10 +483,27 @@ class AudioRecorder:
             # Fallback to microphone only
             return mic_data
     
+    def pause_recording(self):
+        """Pause the current recording"""
+        if self.is_recording and not self.is_paused:
+            self.is_paused = True
+            print("Recording paused")
+            return True
+        return False
+    
+    def resume_recording(self):
+        """Resume the paused recording"""
+        if self.is_recording and self.is_paused:
+            self.is_paused = False
+            print("Recording resumed")
+            return True
+        return False
+    
     def get_recording_status(self):
         """Get current recording status"""
         return {
             'is_recording': self.is_recording,
+            'is_paused': self.is_paused,
             'recording_file': self.recording_file,
             'frames_recorded': len(self.frames)
         }

@@ -40,6 +40,7 @@ class AudioTranscriberGUI:
         self.hf_token = tk.StringVar()
         self.detect_speakers = tk.BooleanVar()
         self.is_recording = False
+        self.is_paused = False
         self.is_transcribing = False
         
         # Model options
@@ -183,6 +184,9 @@ class AudioTranscriberGUI:
     def create_workflow_cards(self, parent, colors):
         """Create modern workflow cards for the UI"""
         
+        # Get the style object
+        style = ttk.Style()
+        
         # Step 1: Audio Input Card
         self.create_audio_input_card(parent, colors)
         
@@ -190,7 +194,7 @@ class AudioTranscriberGUI:
         self.create_settings_card(parent, colors)
         
         # Step 3: Results Card
-        self.create_results_card(parent, colors)
+        self.create_results_card(parent, colors, style)
     
     def create_audio_input_card(self, parent, colors):
         """Create the audio input card"""
@@ -272,7 +276,15 @@ class AudioTranscriberGUI:
             
             self.record_button = ttk.Button(button_frame, text="🎤 Start", 
                                            command=self.start_recording, style='Success.TButton')
-            self.record_button.pack(side=tk.LEFT, padx=(0, 8))
+            self.record_button.pack(side=tk.LEFT, padx=(0, 6))
+            
+            self.pause_record_button = ttk.Button(button_frame, text="⏸️ Pause", 
+                                                 command=self.pause_recording, state="disabled", style='Warning.TButton')
+            self.pause_record_button.pack(side=tk.LEFT, padx=(0, 6))
+            
+            self.resume_record_button = ttk.Button(button_frame, text="▶️ Resume", 
+                                                  command=self.resume_recording, state="disabled", style='Success.TButton')
+            self.resume_record_button.pack(side=tk.LEFT, padx=(0, 6))
             
             self.stop_record_button = ttk.Button(button_frame, text="⏹️ Stop", 
                                                  command=self.stop_recording, state="disabled", style='Accent.TButton')
@@ -446,7 +458,7 @@ class AudioTranscriberGUI:
                                       command=self.clear_all, style='Accent.TButton')
         self.clear_button.pack(side=tk.LEFT, padx=(12, 0))
     
-    def create_results_card(self, parent, colors):
+    def create_results_card(self, parent, colors, style):
         """Create the results card"""
         # Card container
         card_frame = tk.Frame(parent, bg=colors['surface'], relief='flat', bd=0)
@@ -489,13 +501,36 @@ class AudioTranscriberGUI:
                                     fg=colors['text_light'], bg=colors['surface'])
         self.status_label.pack(anchor=tk.W, pady=(0, 10))
         
-        # Results text area
-        self.results_text = scrolledtext.ScrolledText(content_frame, height=10, width=80,
-                                                     font=('Segoe UI', 9),
-                                                     bg=colors['surface'], fg=colors['text'],
-                                                     relief='solid', bd=1,
-                                                     wrap=tk.WORD)
-        self.results_text.pack(fill=tk.BOTH, expand=True)
+        # Create tabbed interface for results
+        self.results_notebook = ttk.Notebook(content_frame)
+        self.results_notebook.pack(fill=tk.BOTH, expand=True)
+        
+        # Configure notebook style
+        style.configure('TNotebook', background=colors['surface'])
+        style.configure('TNotebook.Tab', background=colors['background'], padding=[12, 8])
+        style.map('TNotebook.Tab', background=[('selected', colors['surface'])])
+        
+        # Full Transcription tab
+        self.full_transcription_frame = tk.Frame(self.results_notebook, bg=colors['surface'])
+        self.results_notebook.add(self.full_transcription_frame, text="📝 Full Transcription")
+        
+        self.full_transcription_text = scrolledtext.ScrolledText(self.full_transcription_frame, height=10, width=80,
+                                                               font=('Segoe UI', 9),
+                                                               bg=colors['surface'], fg=colors['text'],
+                                                               relief='solid', bd=1,
+                                                               wrap=tk.WORD)
+        self.full_transcription_text.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        
+        # Summary tab
+        self.summary_frame = tk.Frame(self.results_notebook, bg=colors['surface'])
+        self.results_notebook.add(self.summary_frame, text="📊 Summary")
+        
+        self.summary_text = scrolledtext.ScrolledText(self.summary_frame, height=10, width=80,
+                                                    font=('Segoe UI', 9),
+                                                    bg=colors['surface'], fg=colors['text'],
+                                                    relief='solid', bd=1,
+                                                    wrap=tk.WORD)
+        self.summary_text.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         
         # Configure grid weights for resizing
         parent.columnconfigure(0, weight=1)
@@ -548,7 +583,10 @@ class AudioTranscriberGUI:
         try:
             # Start recording
             self.is_recording = True
+            self.is_paused = False
             self.record_button.config(state="disabled")
+            self.pause_record_button.config(state="normal")
+            self.resume_record_button.config(state="disabled")
             self.stop_record_button.config(state="normal")
             self.record_status_label.config(text="Recording...")
             self.update_status("Recording started")
@@ -561,7 +599,10 @@ class AudioTranscriberGUI:
         except Exception as e:
             messagebox.showerror("Error", f"Failed to start recording: {str(e)}")
             self.is_recording = False
+            self.is_paused = False
             self.record_button.config(state="normal")
+            self.pause_record_button.config(state="disabled")
+            self.resume_record_button.config(state="disabled")
             self.stop_record_button.config(state="disabled")
     
     def _record_audio_thread(self):
@@ -626,7 +667,10 @@ class AudioTranscriberGUI:
         """Handle recording completion in main thread"""
         if saved_file:
             self.is_recording = False
+            self.is_paused = False
             self.record_button.config(state="normal")
+            self.pause_record_button.config(state="disabled")
+            self.resume_record_button.config(state="disabled")
             self.stop_record_button.config(state="disabled")
             self.record_status_label.config(text="Recording saved")
             self.update_status("Recording completed")
@@ -648,7 +692,10 @@ class AudioTranscriberGUI:
     def _recording_error(self, error_message):
         """Handle recording error in main thread"""
         self.is_recording = False
+        self.is_paused = False
         self.record_button.config(state="normal")
+        self.pause_record_button.config(state="disabled")
+        self.resume_record_button.config(state="disabled")
         self.stop_record_button.config(state="disabled")
         self.record_status_label.config(text="Recording failed")
         self.update_status("Recording failed")
@@ -665,7 +712,10 @@ class AudioTranscriberGUI:
             
             if saved_file:
                 self.is_recording = False
+                self.is_paused = False
                 self.record_button.config(state="normal")
+                self.pause_record_button.config(state="disabled")
+                self.resume_record_button.config(state="disabled")
                 self.stop_record_button.config(state="disabled")
                 self.record_status_label.config(text="Recording saved")
                 self.update_status("Recording completed")
@@ -686,6 +736,36 @@ class AudioTranscriberGUI:
                 
         except Exception as e:
             self._recording_error(f"Error stopping recording: {str(e)}")
+    
+    def pause_recording(self):
+        """Pause the current recording"""
+        if not self.is_recording or self.is_paused:
+            return
+        
+        try:
+            if self.audio_recorder and self.audio_recorder.pause_recording():
+                self.is_paused = True
+                self.pause_record_button.config(state="disabled")
+                self.resume_record_button.config(state="normal")
+                self.record_status_label.config(text="Recording paused...")
+                self.update_status("Recording paused")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to pause recording: {str(e)}")
+    
+    def resume_recording(self):
+        """Resume the paused recording"""
+        if not self.is_recording or not self.is_paused:
+            return
+        
+        try:
+            if self.audio_recorder and self.audio_recorder.resume_recording():
+                self.is_paused = False
+                self.pause_record_button.config(state="normal")
+                self.resume_record_button.config(state="disabled")
+                self.record_status_label.config(text="Recording...")
+                self.update_status("Recording resumed")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to resume recording: {str(e)}")
         
     def browse_file(self):
         """Browse for audio file"""
@@ -886,19 +966,31 @@ class AudioTranscriberGUI:
         self.transcribe_button.config(text="Start Transcription", state="normal")
         self.update_progress(0)
         
-        # Display results
+        # Clear both tabs
+        self.full_transcription_text.delete(1.0, tk.END)
+        self.summary_text.delete(1.0, tk.END)
+        
+        # Display full transcription with timestamps
         if isinstance(result, dict) and 'segments' in result:
             # Speaker diarization results
-            text = ""
+            full_text = ""
             for segment in result['segments']:
                 speaker = segment.get('speaker', 'Unknown')
-                text += f"[{speaker}]: {segment['text']}\n"
+                start_time = segment.get('start', 0)
+                end_time = segment.get('end', 0)
+                text = segment.get('text', '')
+                full_text += f"[{start_time:.2f}s - {end_time:.2f}s] {speaker}: {text}\n"
+            
+            # Generate summary
+            summary = self.generate_summary(result)
         else:
             # Standard transcription results
-            text = result.get('text', 'No transcription available')
+            full_text = result.get('text', 'No transcription available')
+            summary = self.generate_simple_summary(full_text)
         
-        self.results_text.delete(1.0, tk.END)
-        self.results_text.insert(1.0, text)
+        # Populate tabs
+        self.full_transcription_text.insert(1.0, full_text)
+        self.summary_text.insert(1.0, summary)
         
         # Show success message
         messagebox.showinfo("Transcription Complete", 
@@ -941,10 +1033,125 @@ class AudioTranscriberGUI:
         else:
             self.checkbox_button.config(text="☐")
     
+    def generate_summary(self, result):
+        """Generate summary for speaker diarization results"""
+        if not isinstance(result, dict) or 'segments' not in result:
+            return "No summary available"
+        
+        segments = result['segments']
+        if not segments:
+            return "No content to summarize"
+        
+        # Basic statistics
+        total_segments = len(segments)
+        total_duration = max(segment.get('end', 0) for segment in segments) if segments else 0
+        
+        # Speaker analysis
+        speakers = {}
+        total_words = 0
+        
+        for segment in segments:
+            speaker = segment.get('speaker', 'Unknown')
+            text = segment.get('text', '')
+            duration = segment.get('end', 0) - segment.get('start', 0)
+            
+            if speaker not in speakers:
+                speakers[speaker] = {'segments': 0, 'words': 0, 'duration': 0}
+            
+            speakers[speaker]['segments'] += 1
+            speakers[speaker]['words'] += len(text.split())
+            speakers[speaker]['duration'] += duration
+            total_words += len(text.split())
+        
+        # Generate summary text
+        summary = f"📊 TRANSCRIPTION SUMMARY\n"
+        summary += f"{'='*50}\n\n"
+        
+        summary += f"📈 OVERVIEW:\n"
+        summary += f"• Total Duration: {total_duration:.1f} seconds ({total_duration/60:.1f} minutes)\n"
+        summary += f"• Total Segments: {total_segments}\n"
+        summary += f"• Total Words: {total_words}\n"
+        summary += f"• Speakers: {len(speakers)}\n\n"
+        
+        summary += f"👥 SPEAKER BREAKDOWN:\n"
+        for speaker, stats in speakers.items():
+            percentage = (stats['duration'] / total_duration * 100) if total_duration > 0 else 0
+            summary += f"• {speaker}: {stats['segments']} segments, {stats['words']} words, {stats['duration']:.1f}s ({percentage:.1f}%)\n"
+        
+        summary += f"\n📝 CONTENT PREVIEW:\n"
+        # Show first few segments
+        preview_segments = segments[:3]
+        for i, segment in enumerate(preview_segments, 1):
+            speaker = segment.get('speaker', 'Unknown')
+            text = segment.get('text', '')[:100]  # First 100 characters
+            if len(segment.get('text', '')) > 100:
+                text += "..."
+            summary += f"{i}. [{speaker}]: {text}\n"
+        
+        if len(segments) > 3:
+            summary += f"... and {len(segments) - 3} more segments\n"
+        
+        return summary
+    
+    def generate_simple_summary(self, text):
+        """Generate summary for simple transcription results"""
+        if not text or text.strip() == "":
+            return "No content to summarize"
+        
+        # Basic statistics
+        words = text.split()
+        sentences = text.split('.')
+        paragraphs = text.split('\n\n')
+        
+        # Clean up empty elements
+        sentences = [s.strip() for s in sentences if s.strip()]
+        paragraphs = [p.strip() for p in paragraphs if p.strip()]
+        
+        # Estimate duration (assuming average speaking rate of 150 words per minute)
+        estimated_duration = len(words) / 150 * 60  # in seconds
+        
+        # Generate summary text
+        summary = f"📊 TRANSCRIPTION SUMMARY\n"
+        summary += f"{'='*50}\n\n"
+        
+        summary += f"📈 OVERVIEW:\n"
+        summary += f"• Estimated Duration: {estimated_duration:.1f} seconds ({estimated_duration/60:.1f} minutes)\n"
+        summary += f"• Total Words: {len(words)}\n"
+        summary += f"• Total Sentences: {len(sentences)}\n"
+        summary += f"• Total Paragraphs: {len(paragraphs)}\n"
+        summary += f"• Average Words per Sentence: {len(words)/len(sentences):.1f}\n\n"
+        
+        summary += f"📝 CONTENT PREVIEW:\n"
+        # Show first few sentences
+        preview_sentences = sentences[:3]
+        for i, sentence in enumerate(preview_sentences, 1):
+            if len(sentence) > 100:
+                sentence = sentence[:100] + "..."
+            summary += f"{i}. {sentence}\n"
+        
+        if len(sentences) > 3:
+            summary += f"... and {len(sentences) - 3} more sentences\n"
+        
+        # Word frequency analysis (top 10 most common words)
+        word_freq = {}
+        for word in words:
+            word = word.lower().strip('.,!?;:"()[]{}')
+            if len(word) > 3:  # Only count words longer than 3 characters
+                word_freq[word] = word_freq.get(word, 0) + 1
+        
+        if word_freq:
+            top_words = sorted(word_freq.items(), key=lambda x: x[1], reverse=True)[:10]
+            summary += f"\n🔤 MOST FREQUENT WORDS:\n"
+            for word, count in top_words:
+                summary += f"• {word}: {count} times\n"
+        
+        return summary
+    
     def clear_all(self):
         """Clear all fields and results"""
         self.audio_file_path.set("")
-        self.results_text.delete(1.0, tk.END)
+        self.full_transcription_text.delete(1.0, tk.END)
+        self.summary_text.delete(1.0, tk.END)
         self.update_progress(0)
         self.update_status("Ready to transcribe")
         
