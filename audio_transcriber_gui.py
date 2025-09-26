@@ -116,57 +116,57 @@ class AudioTranscriberGUI:
             'accent_light': '#a78bfa'  # Light Purple
         }
         
-        # Configure clean, modern button styles
+        # Configure compact button styles
         style.configure('Primary.TButton', 
-                       font=('Segoe UI', 10, 'normal'),
+                       font=('Segoe UI', 9, 'normal'),
                        foreground='white',
                        background=colors['primary'],
-                       padding=(24, 12),
+                       padding=(16, 8),
                        borderwidth=0,
                        focuscolor='none',
                        relief='flat')
         
         style.configure('Success.TButton', 
-                       font=('Segoe UI', 9, 'normal'),
+                       font=('Segoe UI', 8, 'normal'),
                        foreground='white',
                        background=colors['success'],
-                       padding=(20, 10),
+                       padding=(12, 6),
                        borderwidth=0,
                        focuscolor='none',
                        relief='flat')
         
         style.configure('Warning.TButton', 
-                       font=('Segoe UI', 9, 'normal'),
+                       font=('Segoe UI', 8, 'normal'),
                        foreground='white',
                        background=colors['warning'],
-                       padding=(20, 10),
+                       padding=(12, 6),
                        borderwidth=0,
                        focuscolor='none',
                        relief='flat')
         
         style.configure('Danger.TButton', 
-                       font=('Segoe UI', 9, 'normal'),
+                       font=('Segoe UI', 8, 'normal'),
                        foreground='white',
                        background=colors['danger'],
-                       padding=(20, 10),
+                       padding=(12, 6),
                        borderwidth=0,
                        focuscolor='none',
                        relief='flat')
         
         style.configure('Info.TButton', 
-                       font=('Segoe UI', 9, 'normal'),
+                       font=('Segoe UI', 8, 'normal'),
                        foreground='white',
                        background=colors['info'],
-                       padding=(20, 10),
+                       padding=(12, 6),
                        borderwidth=0,
                        focuscolor='none',
                        relief='flat')
         
         style.configure('Secondary.TButton', 
-                       font=('Segoe UI', 9, 'normal'),
+                       font=('Segoe UI', 8, 'normal'),
                        foreground='white',
                        background=colors['secondary'],
-                       padding=(20, 10),
+                       padding=(12, 6),
                        borderwidth=0,
                        focuscolor='none',
                        relief='flat')
@@ -202,25 +202,25 @@ class AudioTranscriberGUI:
         menubar.add_cascade(label="Settings", menu=settings_menu)
         settings_menu.add_command(label="Hugging Face Authentication", command=self.open_hf_settings)
         
-        # Main container with clean padding
+        # Main container with compact padding
         main_container = tk.Frame(self.root, bg=colors['background'])
-        main_container.pack(fill=tk.BOTH, expand=True, padx=24, pady=24)
+        main_container.pack(fill=tk.BOTH, expand=True, padx=16, pady=16)
         
-        # Header section with clean spacing
+        # Header section with compact spacing
         header_frame = tk.Frame(main_container, bg=colors['background'])
-        header_frame.pack(fill=tk.X, pady=(0, 32))
+        header_frame.pack(fill=tk.X, pady=(0, 16))
         
-        # Title with clean typography
+        # Title with compact typography
         title_label = tk.Label(header_frame, text="AudioTranscriber", 
-                             font=('Segoe UI', 32, 'normal'), 
+                             font=('Segoe UI', 24, 'normal'), 
                              fg=colors['text'], bg=colors['background'])
         title_label.pack()
         
-        # Subtitle with clean typography
+        # Subtitle with compact typography
         subtitle_label = tk.Label(header_frame, text="Transform audio into text with AI-powered transcription", 
-                                 font=('Segoe UI', 14, 'normal'), 
+                                 font=('Segoe UI', 11, 'normal'), 
                                  fg=colors['text_light'], bg=colors['background'])
-        subtitle_label.pack(pady=(8, 0))
+        subtitle_label.pack(pady=(4, 0))
         
         # Create main workflow cards
         self.create_workflow_cards(main_container, colors)
@@ -242,21 +242,21 @@ class AudioTranscriberGUI:
     
     def create_audio_input_card(self, parent, colors):
         """Create the audio input card"""
-        # Card container with clean design
+        # Card container with compact design
         card_frame = tk.Frame(parent, bg=colors['surface'], relief='flat', bd=1, highlightbackground=colors['border'])
-        card_frame.pack(fill=tk.X, pady=(0, 24))
+        card_frame.pack(fill=tk.X, pady=(0, 12))
         
-        # Card content with clean padding
+        # Card content with compact padding
         content_frame = tk.Frame(card_frame, bg=colors['surface'])
-        content_frame.pack(fill=tk.BOTH, expand=True, padx=32, pady=32)
+        content_frame.pack(fill=tk.BOTH, expand=True, padx=16, pady=16)
         
-        # Card title with clean styling
+        # Card title with compact styling
         title_frame = tk.Frame(content_frame, bg=colors['surface'])
-        title_frame.pack(fill=tk.X, pady=(0, 24))
+        title_frame.pack(fill=tk.X, pady=(0, 12))
         
-        # Title with clean typography
+        # Title with compact typography
         title_label = tk.Label(title_frame, text="Audio Input", 
-                font=('Segoe UI', 20, 'normal'), 
+                font=('Segoe UI', 16, 'normal'), 
                 fg=colors['text'], bg=colors['surface'])
         title_label.pack(side=tk.LEFT)
         
@@ -269,7 +269,7 @@ class AudioTranscriberGUI:
         record_frame.pack(fill=tk.X, pady=(0, 10))
         
         tk.Label(record_frame, text="Record new audio", 
-                font=('Segoe UI', 14, 'normal'), 
+                font=('Segoe UI', 12, 'normal'), 
                 fg=colors['text'], bg=colors['surface']).pack(anchor=tk.W)
         
         record_controls = tk.Frame(record_frame, bg=colors['surface'])
@@ -318,15 +318,15 @@ class AudioTranscriberGUI:
             
             self.record_button = ttk.Button(button_frame, text="Start Recording", 
                                            command=self.start_recording, style='Success.TButton')
-            self.record_button.pack(side=tk.LEFT, padx=(0, 12))
+            self.record_button.pack(side=tk.LEFT, padx=(0, 8))
             
             self.pause_record_button = ttk.Button(button_frame, text="Pause", 
                                                  command=self.pause_recording, state="disabled", style='Warning.TButton')
-            self.pause_record_button.pack(side=tk.LEFT, padx=(0, 12))
+            self.pause_record_button.pack(side=tk.LEFT, padx=(0, 8))
             
             self.resume_record_button = ttk.Button(button_frame, text="Resume", 
                                                   command=self.resume_recording, state="disabled", style='Info.TButton')
-            self.resume_record_button.pack(side=tk.LEFT, padx=(0, 12))
+            self.resume_record_button.pack(side=tk.LEFT, padx=(0, 8))
             
             self.stop_record_button = ttk.Button(button_frame, text="Stop", 
                                                  command=self.stop_recording, state="disabled", style='Danger.TButton')
@@ -368,7 +368,7 @@ class AudioTranscriberGUI:
         upload_frame.pack(fill=tk.X)
         
         tk.Label(upload_frame, text="Upload audio file", 
-                font=('Segoe UI', 14, 'normal'), 
+                font=('Segoe UI', 12, 'normal'), 
                 fg=colors['text'], bg=colors['surface']).pack(anchor=tk.W)
         
         file_frame = tk.Frame(upload_frame, bg=colors['surface'])
@@ -379,26 +379,26 @@ class AudioTranscriberGUI:
                                        font=('Segoe UI', 9), relief='solid', bd=1)
         self.audio_file_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 8))
         
-        ttk.Button(file_frame, text="Browse", command=self.browse_file, style='Info.TButton').pack(side=tk.LEFT, padx=(0, 12))
+        ttk.Button(file_frame, text="Browse", command=self.browse_file, style='Info.TButton').pack(side=tk.LEFT, padx=(0, 8))
         ttk.Button(file_frame, text="Clear", command=self.clear_audio_file, style='Danger.TButton').pack(side=tk.LEFT)
     
     def create_settings_card(self, parent, colors):
         """Create the transcription settings card"""
-        # Card container with clean design
+        # Card container with compact design
         card_frame = tk.Frame(parent, bg=colors['surface'], relief='flat', bd=1, highlightbackground=colors['border'])
-        card_frame.pack(fill=tk.X, pady=(0, 24))
+        card_frame.pack(fill=tk.X, pady=(0, 12))
         
-        # Card content with clean padding
+        # Card content with compact padding
         content_frame = tk.Frame(card_frame, bg=colors['surface'])
-        content_frame.pack(fill=tk.BOTH, expand=True, padx=32, pady=32)
+        content_frame.pack(fill=tk.BOTH, expand=True, padx=16, pady=16)
         
-        # Card title with clean styling
+        # Card title with compact styling
         title_frame = tk.Frame(content_frame, bg=colors['surface'])
-        title_frame.pack(fill=tk.X, pady=(0, 24))
+        title_frame.pack(fill=tk.X, pady=(0, 12))
         
-        # Title with clean typography
+        # Title with compact typography
         title_label = tk.Label(title_frame, text="Transcription Settings", 
-                font=('Segoe UI', 20, 'normal'), 
+                font=('Segoe UI', 16, 'normal'), 
                 fg=colors['text'], bg=colors['surface'])
         title_label.pack(side=tk.LEFT)
         
@@ -406,17 +406,17 @@ class AudioTranscriberGUI:
         settings_frame = tk.Frame(content_frame, bg=colors['surface'])
         settings_frame.pack(fill=tk.X)
         
-        # Settings organized in a more compact layout
+        # Settings organized in a compact layout
         # Row 1: Model and Language
         row1 = tk.Frame(settings_frame, bg=colors['surface'])
-        row1.pack(fill=tk.X, pady=(0, 12))
+        row1.pack(fill=tk.X, pady=(0, 8))
         
         # Model selection
         model_frame = tk.Frame(row1, bg=colors['surface'])
-        model_frame.pack(side=tk.LEFT, padx=(0, 20))
+        model_frame.pack(side=tk.LEFT, padx=(0, 16))
         
         tk.Label(model_frame, text="Model:", 
-                font=('Segoe UI', 9, 'bold'), 
+                font=('Segoe UI', 9, 'normal'), 
                 fg=colors['text'], bg=colors['surface']).pack(anchor=tk.W)
         
         model_options = ["Tiny", "Base", "Small", "Medium", "Large"]
@@ -424,15 +424,15 @@ class AudioTranscriberGUI:
         model_dropdown = tk.OptionMenu(model_frame, model_var, *model_options)
         model_dropdown.config(bg=colors['surface'], fg=colors['text'], 
                              activebackground=colors['primary'], activeforeground='white',
-                             relief='solid', bd=1, width=10)
-        model_dropdown.pack(anchor=tk.W, pady=(3, 0))
+                             relief='solid', bd=1, width=8)
+        model_dropdown.pack(anchor=tk.W, pady=(2, 0))
         
         # Language selection
         lang_frame = tk.Frame(row1, bg=colors['surface'])
-        lang_frame.pack(side=tk.LEFT, padx=(0, 20))
+        lang_frame.pack(side=tk.LEFT, padx=(0, 16))
         
         tk.Label(lang_frame, text="Language:", 
-                font=('Segoe UI', 9, 'bold'), 
+                font=('Segoe UI', 9, 'normal'), 
                 fg=colors['text'], bg=colors['surface']).pack(anchor=tk.W)
         
         lang_options = ["Auto", "English", "Spanish", "French", "German", "Italian", "Portuguese", "Chinese", "Japanese"]
@@ -440,15 +440,15 @@ class AudioTranscriberGUI:
         lang_dropdown = tk.OptionMenu(lang_frame, lang_var, *lang_options)
         lang_dropdown.config(bg=colors['surface'], fg=colors['text'], 
                             activebackground=colors['primary'], activeforeground='white',
-                            relief='solid', bd=1, width=10)
-        lang_dropdown.pack(anchor=tk.W, pady=(3, 0))
+                            relief='solid', bd=1, width=8)
+        lang_dropdown.pack(anchor=tk.W, pady=(2, 0))
         
         # Output format
         output_frame = tk.Frame(row1, bg=colors['surface'])
         output_frame.pack(side=tk.LEFT)
         
         tk.Label(output_frame, text="Output:", 
-                font=('Segoe UI', 9, 'bold'), 
+                font=('Segoe UI', 9, 'normal'), 
                 fg=colors['text'], bg=colors['surface']).pack(anchor=tk.W)
         
         output_options = ["Text", "SRT", "WebVTT"]
@@ -456,45 +456,45 @@ class AudioTranscriberGUI:
         output_dropdown = tk.OptionMenu(output_frame, output_var, *output_options)
         output_dropdown.config(bg=colors['surface'], fg=colors['text'], 
                               activebackground=colors['primary'], activeforeground='white',
-                              relief='solid', bd=1, width=10)
-        output_dropdown.pack(anchor=tk.W, pady=(3, 0))
+                              relief='solid', bd=1, width=8)
+        output_dropdown.pack(anchor=tk.W, pady=(2, 0))
         
         # Row 2: Advanced options
         row2 = tk.Frame(settings_frame, bg=colors['surface'])
-        row2.pack(fill=tk.X, pady=(12, 0))
+        row2.pack(fill=tk.X, pady=(8, 0))
         
         # Speaker detection
         speaker_frame = tk.Frame(row2, bg=colors['surface'])
-        speaker_frame.pack(side=tk.LEFT, padx=(0, 20))
+        speaker_frame.pack(side=tk.LEFT, padx=(0, 16))
         
         # Create a custom checkbox using a button
         checkbox_frame = tk.Frame(speaker_frame, bg=colors['surface'])
         checkbox_frame.pack(anchor=tk.W)
         
         self.checkbox_button = tk.Button(checkbox_frame, text="☐", 
-                                        font=('Segoe UI', 10),
+                                        font=('Segoe UI', 9),
                                         fg=colors['text'], bg=colors['surface'],
                                         activebackground=colors['surface'],
                                         relief='flat', bd=0,
                                         command=self.toggle_speaker_detection)
-        self.checkbox_button.pack(side=tk.LEFT, padx=(0, 6))
+        self.checkbox_button.pack(side=tk.LEFT, padx=(0, 4))
         
         tk.Label(checkbox_frame, text="Detect speakers", 
-                font=('Segoe UI', 9, 'bold'),
+                font=('Segoe UI', 9, 'normal'),
                 fg=colors['text'], bg=colors['surface']).pack(side=tk.LEFT)
         
         # View transcriptions button
         ttk.Button(row2, text="View Files", 
-                  command=self.view_transcriptions, style='Info.TButton').pack(side=tk.LEFT, padx=(20, 0))
+                  command=self.view_transcriptions, style='Info.TButton').pack(side=tk.LEFT, padx=(16, 0))
         
         # Main action buttons
         action_frame = tk.Frame(content_frame, bg=colors['surface'])
-        action_frame.pack(fill=tk.X, pady=(32, 0))
+        action_frame.pack(fill=tk.X, pady=(16, 0))
         
         # Primary action button
         self.transcribe_button = ttk.Button(action_frame, text="Start Transcription", 
                                            command=self.start_transcription, style='Primary.TButton')
-        self.transcribe_button.pack(side=tk.LEFT, padx=(0, 16))
+        self.transcribe_button.pack(side=tk.LEFT, padx=(0, 12))
         
         # Secondary action button
         self.clear_button = ttk.Button(action_frame, text="Clear All", 
@@ -503,21 +503,21 @@ class AudioTranscriberGUI:
     
     def create_results_card(self, parent, colors, style):
         """Create the results card"""
-        # Card container with clean design
+        # Card container with compact design
         card_frame = tk.Frame(parent, bg=colors['surface'], relief='flat', bd=1, highlightbackground=colors['border'])
-        card_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 24))
+        card_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 12))
         
-        # Card content with clean padding
+        # Card content with compact padding
         content_frame = tk.Frame(card_frame, bg=colors['surface'])
-        content_frame.pack(fill=tk.BOTH, expand=True, padx=32, pady=32)
+        content_frame.pack(fill=tk.BOTH, expand=True, padx=16, pady=16)
         
-        # Card title with clean styling
+        # Card title with compact styling
         title_frame = tk.Frame(content_frame, bg=colors['surface'])
-        title_frame.pack(fill=tk.X, pady=(0, 24))
+        title_frame.pack(fill=tk.X, pady=(0, 12))
         
-        # Title with clean typography
+        # Title with compact typography
         title_label = tk.Label(title_frame, text="Transcription Results", 
-                font=('Segoe UI', 20, 'normal'), 
+                font=('Segoe UI', 16, 'normal'), 
                 fg=colors['text'], bg=colors['surface'])
         title_label.pack(side=tk.LEFT)
         
@@ -546,13 +546,13 @@ class AudioTranscriberGUI:
         self.results_notebook = ttk.Notebook(content_frame)
         self.results_notebook.pack(fill=tk.BOTH, expand=True)
         
-        # Configure notebook style with clean colors
+        # Configure notebook style with compact colors
         style.configure('TNotebook', background=colors['surface'], borderwidth=0)
         style.configure('TNotebook.Tab', 
                        background=colors['background_alt'], 
                        foreground=colors['text_secondary'],
-                       padding=[20, 12],
-                       font=('Segoe UI', 11, 'normal'))
+                       padding=[16, 8],
+                       font=('Segoe UI', 10, 'normal'))
         style.map('TNotebook.Tab', 
                  background=[('selected', colors['primary']), ('active', colors['primary_light'])],
                  foreground=[('selected', 'white'), ('active', 'white')])
@@ -561,23 +561,23 @@ class AudioTranscriberGUI:
         self.full_transcription_frame = tk.Frame(self.results_notebook, bg=colors['surface'])
         self.results_notebook.add(self.full_transcription_frame, text="Full Transcription")
         
-        self.full_transcription_text = scrolledtext.ScrolledText(self.full_transcription_frame, height=10, width=80,
-                                                               font=('Segoe UI', 10),
+        self.full_transcription_text = scrolledtext.ScrolledText(self.full_transcription_frame, height=8, width=80,
+                                                               font=('Segoe UI', 9),
                                                                bg=colors['surface'], fg=colors['text'],
                                                                relief='solid', bd=1,
                                                                wrap=tk.WORD)
-        self.full_transcription_text.pack(fill=tk.BOTH, expand=True, padx=16, pady=16)
+        self.full_transcription_text.pack(fill=tk.BOTH, expand=True, padx=12, pady=12)
         
         # Summary tab
         self.summary_frame = tk.Frame(self.results_notebook, bg=colors['surface'])
         self.results_notebook.add(self.summary_frame, text="Summary")
         
-        self.summary_text = scrolledtext.ScrolledText(self.summary_frame, height=10, width=80,
-                                                    font=('Segoe UI', 10),
+        self.summary_text = scrolledtext.ScrolledText(self.summary_frame, height=8, width=80,
+                                                    font=('Segoe UI', 9),
                                                     bg=colors['surface'], fg=colors['text'],
                                                     relief='solid', bd=1,
                                                     wrap=tk.WORD)
-        self.summary_text.pack(fill=tk.BOTH, expand=True, padx=16, pady=16)
+        self.summary_text.pack(fill=tk.BOTH, expand=True, padx=12, pady=12)
         
         # Configure grid weights for resizing
         parent.columnconfigure(0, weight=1)
